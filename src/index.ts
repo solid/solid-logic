@@ -67,10 +67,10 @@ export class SolidLogic {
     this.chat = new ChatLogic(this.store, ns, this.profile);
   }
 
-  async findAclDocUrl(url: string) {
-    const doc = this.store.sym(url);
-    await this.load(doc);
-    const docNode = this.store.any(doc, ACL_LINK);
+  async findAclDocUrl (url: string) {
+    const doc = this.store.sym(url)
+    await this.load(doc)
+    const docNode = this.store.any(doc, ACL_LINK)
     if (!docNode) {
       throw new Error(`No ACL link discovered for ${url}`);
     }
@@ -190,11 +190,11 @@ export class SolidLogic {
       });
   }
 
-  load(doc: NamedNode | NamedNode[] | string) {
+  load (doc: NamedNode | NamedNode[] | string) {
     if (!this.store.fetcher) {
       throw new Error("Cannot load doc(s), have no fetcher");
     }
-    return this.store.fetcher.load(doc);
+    return this.store.fetcher.load(doc)
   }
 
   async loadIndexes(
@@ -283,20 +283,14 @@ export class SolidLogic {
   }
 
   async getContainerMembers(containerUrl) {
-    await this.load(this.store.sym(containerUrl));
-    return this.store
-      .statementsMatching(
-        this.store.sym(containerUrl),
-        this.store.sym("http://www.w3.org/ns/ldp#contains")
-      )
-      .map((st: Statement) => st.object.value);
+    // update to latest index.ttl content
+    await this.store.fetcher.refresh(this.store.sym(containerUrl))
+    return this.store.statementsMatching(this.store.sym(containerUrl), this.store.sym('http://www.w3.org/ns/ldp#contains')).map((st: Statement) => st.object.value);
   }
 
   async recursiveDelete(url: string) {
     try {
       if (this.isContainer(url)) {
-        const aclDocUrl = await this.findAclDocUrl(url);
-        await this.fetcher.fetch(aclDocUrl, { method: "DELETE" });
         const containerMembers = await this.getContainerMembers(url);
         await Promise.all(
           containerMembers.map((url) => this.recursiveDelete(url))
