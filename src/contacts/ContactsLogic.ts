@@ -1,20 +1,8 @@
-import { v4 as uuid } from "uuid";
-import { NamedNode, Node, st, term } from "rdflib";
+import * as rdf from "rdflib"
+import { NamedNode, Node } from "rdflib";
 import { LiveStore, SolidNamespace } from "../index";
-import { ProfileLogic } from "../profile/ProfileLogic";
-import { UtilityLogic } from "../util/UtilityLogic";
-import { newThing } from "../uri";
-import ns from "solid-namespace";
-
-interface NewPaneOptions {
-  me?: NamedNode;
-  newInstance?: NamedNode;
-  newBase: string;
-}
-
-interface CreatedPaneOptions {
-  newInstance: NamedNode;
-}
+import solidNamespace from "solid-namespace";
+const ns: SolidNamespace = solidNamespace(rdf);
 
 export class Contact {
   uri: NamedNode
@@ -25,6 +13,10 @@ export class Contact {
     this.store = store;
   }
 
+  getFullName(): string | null {
+    const node = this.store.any(this.uri, ns.vcard('fn'));
+    return (node ? node.value : null);
+  }
 }
 
 export class Addressbook {
@@ -37,12 +29,12 @@ export class Addressbook {
   }
 
   async fetch(): Promise<void> {
-    this.store.fetcher.load(this.uri.doc().value);
+    await this.store.fetcher.load(this.uri.doc().value);
   }
 
   getMembers(): Contact[] {
     // FIXME: https://gitter.im/solid/solidos?at=603659fb4821572018f9d82d
-    const members: Node[] = this.store.each(null, ns('vcard:inAddressBook'), this.uri, this.uri.doc());
+    const members: Node[] = this.store.each(null, ns.vcard('inAddressBook'), this.uri, this.uri.doc());
     return members.map((node: Node) => new Contact(node as NamedNode, this.store));
   }
 }
