@@ -6,13 +6,20 @@ import { NoAuthnLogic } from "./authn/NoAuthnLogic";
 import { SolidAuthClientAuthnLogic } from "./authn/SolidAuthClientAuthnLogic";
 
 import { ChatLogic } from "./chat/ChatLogic";
+import { LanguageLogic } from './language/LanguageLogic';
 import * as debug from "./debug";
 import { ProfileLogic } from "./profile/ProfileLogic";
 import { UtilityLogic } from "./util/UtilityLogic";
 
+export { ProfileLogic } from "./profile/ProfileLogic";
+export { NoAuthnLogic } from "./authn/NoAuthnLogic";
+export { AuthnLogic } from "./authn";
+// export * as language from './language'
+
 export { ACL_LINK } from './util/UtilityLogic';
 
-const ns: SolidNamespace = solidNamespace(rdf);
+
+export const ns: SolidNamespace = solidNamespace(rdf);
 
 interface ConnectedStore extends Store {
   fetcher: Fetcher;
@@ -46,6 +53,7 @@ export class SolidLogic {
 
   chat: ChatLogic;
   profile: ProfileLogic;
+  language: LanguageLogic;
   authn: AuthnLogic;
   util: UtilityLogic;
 
@@ -65,6 +73,7 @@ export class SolidLogic {
     } else {
       this.authn = new NoAuthnLogic();
     }
+    this.language = new LanguageLogic(this.store, ns, this.authn)
     this.profile = new ProfileLogic(this.store, ns, this.authn);
     this.chat = new ChatLogic(this.store, ns, this.profile);
     this.util = new UtilityLogic(this.store, ns, this.fetcher);
